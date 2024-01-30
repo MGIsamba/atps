@@ -1,0 +1,44 @@
+import React, { useLayoutEffect } from "react";
+import { FlatList, Text, View, TouchableHighlight, Image } from "react-native";
+import styles from "./styles";
+import MenuImage from "../../components/MenuImage/MenuImage";
+import { getNews, getNewsName } from "../../data/MockDataAPI";
+
+export default function NewsListScreen(props) {
+  const { navigation, route } = props;
+
+  const item = route?.params?.new;
+  const newsArray = getNews(item.dnewId);
+
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: route.params?.title,
+      headerRight: () => <View />,
+    });
+  }, []);
+
+{/** 
+  const onPressTrainers = (item) => {
+    navigation.navigate("TrainerDetail", { item });
+  };
+*/}
+
+  const renderNews = ({ item }) => (
+    
+    <TouchableHighlight underlayColor="rgba(73,182,77,0.9)" onPress={() => onPressTrainers(item)}>
+      <View style={styles.container}>
+        <Image style={styles.photo} source={{ uri: item.photo_url }} />
+        <Text style={styles.forceNumber}>{item.name}</Text>
+        <Text style={styles. fullName}>{item. position}</Text>
+        <Text style={styles.category}>{getNewsName(item.newId)}</Text>
+      </View>
+    </TouchableHighlight>
+  );
+
+  return (
+    <View>
+      <FlatList horizontal showsHorizontalScrollIndicator={false} numRow={1} data={newsArray} renderItem={renderNews} keyExtractor={(item) => `${item.dnewId}`} />
+    </View>
+  );
+}
