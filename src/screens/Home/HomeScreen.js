@@ -19,7 +19,7 @@ import PostCard from "../../components/Post/PostCard";
 import { Container } from "../../styles/FeedStyles";
 
 import { firebase } from "../../../firebase";
-
+import CommentsModal from "../../components/CommentsModal";
 
 const HomeScreen = ({ navigation }) => {
   const [posts, setPosts] = useState([]);

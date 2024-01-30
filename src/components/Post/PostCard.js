@@ -1,5 +1,6 @@
-import React, {useContext, useEffect, useState} from 'react';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import React, { useContext, useEffect, useState } from "react";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import moment from "moment";
 
 import {
   Container,
@@ -15,9 +16,12 @@ import {
   Interaction,
   InteractionText,
   Divider,
-} from '../../styles/FeedStyles';
+} from "../../styles/FeedStyles";
+import { firebase } from "../../../firebase";
 
-import ProgressiveImage from './ProgressiveImage';
+import ProgressiveImage from "./ProgressiveImage";
+import CommentsModal from "../CommentsModal";
+import { Alert } from "react-native";
 
 //import {AuthContext} from '../navigation/AuthProvider';
 
@@ -25,57 +29,74 @@ import ProgressiveImage from './ProgressiveImage';
 //import {TouchableOpacity} from 'react-native-gesture-handler';
 //import firestore from '@react-native-firebase/firestore';
 
-const PostCard = ({item}) => {
+const PostCard = ({ item }) => {
+  likeIcon = item.liked ? "heart" : "heart-outline";
+  likeIconColor = item.liked ? "#2e64e5" : "#333";
 
+  const [liked, setLiked] = useState(item.liked);
+  const [modalVisible, setModalVisible] = useState(false);
 
-  likeIcon = item.liked ? 'heart' : 'heart-outline';
-  likeIconColor = item.liked ? '#2e64e5' : '#333';
-
-  
   if (item.likes == 1) {
-    likeText = '1 Like';
+    likeText = "1 Like";
   } else if (item.likes > 1) {
-    likeText = item.likes + ' Likes';
+    likeText = item.likes + " Likes";
   } else {
-    likeText = 'Like';
+    likeText = "Like";
   }
 
-  if (item.comments == 1) {
-    commentText = '1 Comment';
-  } else if (item.comments > 1) {
-    commentText = item.comments + ' Comments';
+  if (item.comments?.length === 1) {
+    commentText = "1 Comment";
+  } else if (item.comments?.length > 1) {
+    commentText = item.comments?.length + " Comments";
   } else {
-    commentText = 'Comment';
+    commentText = "Comment";
   }
 
+  const onLike = async () => {
+    await firebase.firestore().collection("posts").doc(item.id).update({
+      liked: !item.liked,
+    });
+    setLiked(!item.liked);
+  };
 
- 
+  const setModal = ()=> {
+    Alert.alert("pppppp")
+    console.log("pppppp")
+  }
 
+  console.log("dataaa", item.postTime);
   return (
     <Card>
       <UserInfo>
-        <UserImg source ={item.userImg} />
+        <UserImg source={item.userImg} />
         <UserInfoText>
           <UserName>{item.userName}</UserName>
-          <PostTime>{item.postTime}</PostTime>
+          <PostTime>{moment(item.postTime.seconds).toString()}</PostTime>
         </UserInfoText>
       </UserInfo>
       <PostText>{item.post}</PostText>
-       {item.postImg != 'none' ? <PostImg source={item.postImg} /> : <Divider />} 
-
-     
+      {item.postImg != "none" ? (
+        <PostImg source={{ uri: item.postImg }} />
+      ) : (
+        <Divider />
+      )}
 
       <InteractionWrapper>
-      <Interaction active={item.liked}>
-        <Ionicons name={likeIcon} size={25} color={likeIconColor} />
-        <InteractionText active={item.liked}>{likeText}</InteractionText>
+        <Interaction active={liked} onPress={onLike}>
+          <Ionicons name={likeIcon} size={25} color={likeIconColor} />
+          <InteractionText active={item.liked}>{likeText}</InteractionText>
         </Interaction>
-        <Interaction>
+        <Interaction onPress={() => setModalVisible(true)}>
           <Ionicons name="md-chatbubble-outline" size={25} />
           <InteractionText>{commentText}</InteractionText>
         </Interaction>
-         
       </InteractionWrapper>
+      {modalVisible? (
+        <CommentsModal
+          setModalVisible={setModalVisible}
+          post={item}
+        />
+      ):null}
     </Card>
   );
 };
